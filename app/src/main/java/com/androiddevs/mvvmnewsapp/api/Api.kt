@@ -14,7 +14,7 @@ interface Api {
     //fetch info related to the US
     @GET("v2/top-headlines")
     suspend fun fetchBreakingNews( @Query ("country") countryCode: String,
-                                   @Query("page") pageNumber: Int = 1,
+                                   @Query("page") pageNumber: Int,
                                    @Query("apiKey") apiKey: String = API_KEY ) : Response<ResponseApi>
 
 
@@ -22,7 +22,7 @@ interface Api {
     //fetch news from all around the world
     @GET("v2/everything")
     suspend fun fetchAllNews( @Query ("q") search: String,
-                                   @Query("page") pageNumber: Int = 1,
+                                   @Query("page") pageNumber: Int,
                                    @Query("apiKey") apiKey: String = API_KEY ) : Response<ResponseApi>
 
 

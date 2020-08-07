@@ -10,4 +10,7 @@ class NewsRepo(
     //retrieve breaking news from api
     suspend fun retrieveBreakingNews(countryCode: String, page: Int) =
         RetrofitGenerator.apiConnection.fetchBreakingNews(countryCode, page)
+
+    suspend fun searchNews(query: String, pageNumber : Int) =
+        RetrofitGenerator.apiConnection.fetchAllNews(query, pageNumber)
 }
