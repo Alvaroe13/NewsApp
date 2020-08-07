@@ -3,6 +3,7 @@ package com.androiddevs.mvvmnewsapp.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.androiddevs.mvvmnewsapp.models.Article
 import com.androiddevs.mvvmnewsapp.models.ResponseApi
 import com.androiddevs.mvvmnewsapp.repositories.NewsRepo
 import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.COUNTRY_CODE
@@ -67,5 +68,17 @@ class NewsFeedViewModel(
         }
         return Resource.Error(null , response.message())
     }
+
+    // here launch coroutine
+    fun saveArticleInCache(article : Article) = viewModelScope.launch {
+        newsRepo.saveNewInDb(article)
+    }
+
+    fun getSavedArticles() = newsRepo.getAllArticles()
+
+    fun deleteArticle(article : Article) = viewModelScope.launch {
+        newsRepo.deleteArticle(article)
+    }
+
 
 }
