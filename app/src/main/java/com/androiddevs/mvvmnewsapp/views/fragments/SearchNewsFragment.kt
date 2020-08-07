@@ -6,6 +6,7 @@ import android.view.View
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.androiddevs.mvvmnewsapp.R
 import com.androiddevs.mvvmnewsapp.adapters.NewsFeedAdapter
@@ -33,7 +34,18 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
         initRecycler()
         subscribeViewModel()
         searchBar()
+
+        recyclerAdapter.setOnItemClickListener {
+
+            var bundle = Bundle().apply {
+                putSerializable("newsArticle", it)
+            }
+
+            findNavController().navigate(R.id.action_searchNewsFragment2_to_articleFragment2, bundle)
+
+        }
     }
+
 
     /* When user types in a word in the EditText we will add a small delay to avoid making a query to
       the server every time the user types in a letter  */
