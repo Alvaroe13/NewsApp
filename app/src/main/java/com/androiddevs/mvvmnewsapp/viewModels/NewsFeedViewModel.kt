@@ -18,9 +18,11 @@ class NewsFeedViewModel(
 
     val breakingNews: MutableLiveData<Resource<ResponseApi>> = MutableLiveData()
     var breakingNewsPage = 1
+    var breakingNewsResponse : ResponseApi? = null
 
     val searchNews: MutableLiveData<Resource<ResponseApi>> = MutableLiveData()
     var searchNewsPage = 1
+    var searchNewsResponse : ResponseApi? = null
 
     init {
         getBreakingNews(COUNTRY_CODE)
@@ -28,7 +30,7 @@ class NewsFeedViewModel(
 
     //lets launch the coroutines here with the viewModelScope
     //(as long as the vm is alive so is the coroutine)
-    private fun getBreakingNews(countryCode: String ) = viewModelScope.launch {
+    fun getBreakingNews(countryCode: String ) = viewModelScope.launch {
 
         breakingNews.postValue(Resource.Loading())
         //fetch info from server
@@ -50,7 +52,16 @@ class NewsFeedViewModel(
     private fun processBreakingNewsResponse(response : Response<ResponseApi>) : Resource<ResponseApi>{
         if (response.isSuccessful){
             response.body()?.let { responseResult ->
-                return Resource.Success(responseResult)
+                //responseResult is the response coming from the server
+                breakingNewsPage++
+                if(breakingNewsResponse == null){
+                    breakingNewsResponse = responseResult
+                }else{
+                   val oldArticles = breakingNewsResponse?.articles
+                   val newArticles = responseResult.articles
+                    oldArticles?.addAll(newArticles)
+                }
+                return Resource.Success(breakingNewsResponse ?: responseResult)
             }
         }
         return Resource.Error(null , response.message())
@@ -63,7 +74,16 @@ class NewsFeedViewModel(
     private fun processSearchNewsResponse(response : Response<ResponseApi>) : Resource<ResponseApi>{
         if (response.isSuccessful){
             response.body()?.let { responseResult ->
-                return Resource.Success(responseResult)
+                //responseResult is the response coming from the server
+                searchNewsPage++
+                if(searchNewsResponse == null){
+                    searchNewsResponse = responseResult
+                }else{
+                    val oldArticles = searchNewsResponse?.articles
+                    val newArticles = responseResult.articles
+                    oldArticles?.addAll(newArticles)
+                }
+                return Resource.Success(searchNewsResponse ?: responseResult)
             }
         }
         return Resource.Error(null , response.message())
