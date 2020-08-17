@@ -20,7 +20,7 @@ import retrofit2.Response
 import java.io.IOException
 
 class NewsFeedViewModel(
-    val appContext : Application, // needed to check internet connection
+    appContext : Application, // needed to check internet connection
     val newsRepo : NewsRepo
 ) : AndroidViewModel(appContext){
 
