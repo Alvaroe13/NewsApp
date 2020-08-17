@@ -6,8 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.androiddevs.mvvmnewsapp.models.Article
+import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.DATABASE_VERSION
 
-@Database( entities = [Article::class] , version = 1)
+@Database( entities = [Article::class] , version = DATABASE_VERSION)
 @TypeConverters(TypeConverter::class)
 abstract class ArticleDatabase : RoomDatabase() {
 

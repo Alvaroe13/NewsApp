@@ -1,7 +1,6 @@
 package com.androiddevs.mvvmnewsapp.views.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.AbsListView
 import android.widget.Toast
@@ -27,8 +26,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
-
-    val TAG = "BreakingNewsFragment"
 
     lateinit var viewModel : NewsFeedViewModel
     lateinit var recyclerAdapter : NewsFeedAdapter

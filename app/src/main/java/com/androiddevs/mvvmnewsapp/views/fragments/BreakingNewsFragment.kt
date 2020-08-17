@@ -1,7 +1,6 @@
 package com.androiddevs.mvvmnewsapp.views.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.AbsListView
 import android.widget.Toast
@@ -12,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.androiddevs.mvvmnewsapp.R
 import com.androiddevs.mvvmnewsapp.adapters.NewsFeedAdapter
-import com.androiddevs.mvvmnewsapp.utils.Constants
 import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.COUNTRY_CODE
 import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.QUERY_PAGE_SIZE
 import com.androiddevs.mvvmnewsapp.utils.Resource
