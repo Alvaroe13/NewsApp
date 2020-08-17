@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AbsListView
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -86,6 +87,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
     }
 
     private fun subscribeViewModel(){
+        println("Debugging: initViewModel called")
         viewModel.searchNews.observe(viewLifecycleOwner, Observer { apiResponse ->
             when(apiResponse){
                 is Resource.Success ->{
@@ -102,7 +104,8 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
                 is Resource.Error ->{
                     hideProgressBar()
                     apiResponse.message?.let { errorMessage ->
-                        Log.e(TAG, "error here!!!")
+                        Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
+                        println("Debugging: something went wrong here")
                     }
                 }
                 is Resource.Loading ->{

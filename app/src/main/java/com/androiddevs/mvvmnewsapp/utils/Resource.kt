@@ -1,8 +1,8 @@
 package com.androiddevs.mvvmnewsapp.utils
 
 /**
- * This class will help us define if answer from ser is successful or not and act accordingly
- * (arch best practices)
+ * This class will help us define if answer from server is successful or not and act accordingly
+ * (best practices)
  */
 sealed class Resource<T>(
     val data: T? = null ,

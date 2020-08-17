@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AbsListView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -59,9 +60,11 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
     }
 
     private fun subscribeViewModel(){
+        println("Debugging: initViewModel Breaking news called!")
         viewModel.breakingNews.observe(viewLifecycleOwner, Observer { apiResponse ->
             when(apiResponse){
                 is Resource.Success ->{
+                    println("Debugging: call successfully")
                     hideProgressBar()
                     apiResponse.data?.let {finalResponse ->
                         recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
@@ -73,13 +76,16 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                     }
                 }
                 is Resource.Error ->{
+                    println("Debugging: call error")
                     hideProgressBar()
                     apiResponse.message?.let { errorMessage ->
+                        Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
                         println("Debugging: something went wrong here")
                     }
                 }
                 is Resource.Loading ->{
                     showProgressBar()
+                    println("Debugging: call loading")
                 }
             }
         })
