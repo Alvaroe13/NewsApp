@@ -32,34 +32,8 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         viewModel = (activity as MainActivity).viewModel
         initRecycler()
         subscribeViewModel()
+        openArticle()
         btnRetry()
-
-
-
-        recyclerAdapter.setOnItemClickListener {
-
-            var bundle = Bundle().apply {
-                putSerializable("newsArticle", it)
-            }
-
-            findNavController().navigate(R.id.action_breakingNewsFragment2_to_articleFragment2, bundle)
-        }
-
-
-
-    }
-
-    private fun btnRetry() {
-
-        buttonRetry.setOnClickListener {
-            val connection = viewModel.checkInternetConnection()
-            if (!connection){
-                Toast.makeText(context, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
-            }else{
-                println("BreakingNewsFragment, onViewCreated : there is internet and it's called!")
-                viewModel.getBreakingNews(COUNTRY_CODE)
-            }
-        }
     }
 
     private fun initRecycler() {
@@ -69,16 +43,15 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
             layoutManager = LinearLayoutManager(activity)
             addOnScrollListener(scrollListenerCustom)
         }
-
     }
 
     private fun subscribeViewModel(){
-        println("Debugging: initViewModel Breaking news called!")
+        println("BreakingNewsFragment: initViewModel Breaking news called!")
         viewModel.breakingNews.observe(viewLifecycleOwner, Observer { apiResponse ->
             when(apiResponse){
                 is Resource.Success ->{
-                    println("Debugging: call successfully")
-                    buttonRetry.visibility = View.INVISIBLE
+                    println("BreakingNewsFragment: call successfully")
+                    btnRetryBreakingNews.visibility = View.INVISIBLE
                     rvBreakingNews.visibility = View.VISIBLE
                     hideProgressBar()
                     apiResponse.data?.let {finalResponse ->
@@ -91,20 +64,44 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                     }
                 }
                 is Resource.Error ->{
-                    println("Debugging: call error: ${apiResponse.message}")
+                    println("BreakingNewsFragment: call error: ${apiResponse.message}")
                     hideProgressBar()
                     apiResponse.message?.let { errorMessage ->
                         Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
-                        buttonRetry.visibility = View.VISIBLE
+                        btnRetryBreakingNews.visibility = View.VISIBLE
                         rvBreakingNews.visibility = View.INVISIBLE
                     }
                 }
                 is Resource.Loading ->{
-                    println("Debugging: call loading")
                     showProgressBar()
                 }
             }
         })
+    }
+
+    private fun openArticle() {
+        recyclerAdapter.setOnItemClickListener {
+
+            val bundle = Bundle().apply {
+                putSerializable("newsArticle", it)
+                println("SearchNewsFragment, article title: ${it.title}")
+            }
+
+            findNavController().navigate(R.id.action_breakingNewsFragment2_to_articleFragment2, bundle)
+        }
+    }
+
+    private fun btnRetry() {
+
+        btnRetryBreakingNews.setOnClickListener {
+            val connection = viewModel.checkInternetConnection()
+            if (!connection){
+                Toast.makeText(context, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
+            }else{
+                println("BreakingNewsFragment, onViewCreated : there is internet and it's called!")
+                viewModel.getBreakingNews(COUNTRY_CODE)
+            }
+        }
     }
 
     private fun hideProgressBar() {
@@ -117,7 +114,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         loadingState = true
     }
 
-    //scrolling handling section
+    /** scroll handling section */
     val scrollListenerCustom = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
