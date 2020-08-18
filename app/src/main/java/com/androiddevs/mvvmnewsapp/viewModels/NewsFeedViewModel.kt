@@ -13,8 +13,11 @@ import com.androiddevs.mvvmnewsapp.models.Article
 import com.androiddevs.mvvmnewsapp.models.ResponseApi
 import com.androiddevs.mvvmnewsapp.repositories.NewsRepo
 import com.androiddevs.mvvmnewsapp.utils.AppsContext
+import com.androiddevs.mvvmnewsapp.utils.Constants
 import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.COUNTRY_CODE
+import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.SEARCH_TIME_DELAY
 import com.androiddevs.mvvmnewsapp.utils.Resource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.io.IOException
@@ -44,6 +47,7 @@ class NewsFeedViewModel(
     //(as long as the vm is alive so is the coroutine)
     fun getBreakingNews(countryCode: String ) = viewModelScope.launch {
         println("NewsFeedViewModel: getBreakingNews called")
+        delay(SEARCH_TIME_DELAY)
         safeBreakingNewsCall(countryCode)
     }
 
