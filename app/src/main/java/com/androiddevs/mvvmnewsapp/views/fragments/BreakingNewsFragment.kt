@@ -26,13 +26,15 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
     var isLastPage = false
     var scrollingState = false
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = (activity as MainActivity).viewModel
         initRecycler()
         subscribeViewModel()
+        btnRetry()
+
+
 
         recyclerAdapter.setOnItemClickListener {
 
@@ -45,6 +47,19 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
 
 
+    }
+
+    private fun btnRetry() {
+
+        buttonRetry.setOnClickListener {
+            val connection = viewModel.checkInternetConnection()
+            if (!connection){
+                Toast.makeText(context, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
+            }else{
+                println("BreakingNewsFragment, onViewCreated : there is internet and it's called!")
+                viewModel.getBreakingNews(COUNTRY_CODE)
+            }
+        }
     }
 
     private fun initRecycler() {
@@ -63,6 +78,8 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
             when(apiResponse){
                 is Resource.Success ->{
                     println("Debugging: call successfully")
+                    buttonRetry.visibility = View.INVISIBLE
+                    rvBreakingNews.visibility = View.VISIBLE
                     hideProgressBar()
                     apiResponse.data?.let {finalResponse ->
                         recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
@@ -74,16 +91,17 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                     }
                 }
                 is Resource.Error ->{
-                    println("Debugging: call error")
+                    println("Debugging: call error: ${apiResponse.message}")
                     hideProgressBar()
                     apiResponse.message?.let { errorMessage ->
                         Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
-                        println("Debugging: something went wrong here")
+                        buttonRetry.visibility = View.VISIBLE
+                        rvBreakingNews.visibility = View.INVISIBLE
                     }
                 }
                 is Resource.Loading ->{
-                    showProgressBar()
                     println("Debugging: call loading")
+                    showProgressBar()
                 }
             }
         })

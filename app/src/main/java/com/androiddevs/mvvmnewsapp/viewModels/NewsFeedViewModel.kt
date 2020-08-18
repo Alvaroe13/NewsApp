@@ -43,10 +43,12 @@ class NewsFeedViewModel(
     //lets launch the coroutines here with the viewModelScope
     //(as long as the vm is alive so is the coroutine)
     fun getBreakingNews(countryCode: String ) = viewModelScope.launch {
+        println("NewsFeedViewModel: getBreakingNews called")
         safeBreakingNewsCall(countryCode)
     }
 
     fun searchNews( query : String) = viewModelScope.launch {
+        println("NewsFeedViewModel: searchNews called")
         safeSearchNewsCall(query)
     }
 
@@ -58,11 +60,13 @@ class NewsFeedViewModel(
         breakingNews.postValue(Resource.Loading())
         try {
             if(checkInternetConnection()) {
+                println("NewsFeedViewModel: there is internet connection")
                 //fetch info from server
                 val response = newsRepo.retrieveBreakingNews(countryCode, breakingNewsPage)
                 //once is processed by our function we post it in LiveData
                 breakingNews.postValue(processBreakingNewsResponse(response))
             } else {
+                println("NewsFeedViewModel: there is not internet connection")
                 breakingNews.postValue(Resource.Error(null, "No internet connection"))
             }
         } catch(t: Throwable) {
@@ -141,14 +145,15 @@ class NewsFeedViewModel(
     }
 
     /**
-     * this method will check if device has internet connection when requesting data from server
+     *check if device has connection, public because we're gonna use it in fragment as well
      */
-    private fun checkInternetConnection(): Boolean {
-        println("Debugging: called!!")
+    fun checkInternetConnection(): Boolean {
+        println("NewsFeedViewModel, checkInternetConnection : called!!")
         val connectivityManager = getApplication<AppsContext>().getSystemService(
             Context.CONNECTIVITY_SERVICE
         ) as ConnectivityManager
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            println("NewsFeedViewModel greater than 23 api : called!!")
             val activeNetwork = connectivityManager.activeNetwork ?: return false
             val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
             return when {
@@ -157,8 +162,8 @@ class NewsFeedViewModel(
                 capabilities.hasTransport(TRANSPORT_ETHERNET) -> true
                 else -> false
             }
-        } else { //if device's os version is less than 23 api level
-            println("Debugging: called")
+        } else { //we also handle if device's os version is less than 23 api level
+            println("NewsFeedViewModel less than 23 api: called")
             connectivityManager.activeNetworkInfo?.run {
                 return when(type) {
                     TYPE_WIFI -> true
@@ -173,7 +178,7 @@ class NewsFeedViewModel(
 
     //------------------------------- local cache ------------------------------------//
 
-    // here launch coroutine
+    // launch coroutines
     fun saveArticleInCache(article : Article) = viewModelScope.launch {
         newsRepo.saveNewInDb(article)
     }
