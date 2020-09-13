@@ -156,11 +156,11 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
     }
 
     private fun showNotFoundImage(){
-        ivResultNotFound.visibility = View.VISIBLE
+        ivBreakingNotFound.visibility = View.VISIBLE
     }
 
     private fun hideNotFoundImage(){
-        ivResultNotFound.visibility = View.GONE
+        ivBreakingNotFound.visibility = View.GONE
     }
 
     private fun hideProgressBar() {

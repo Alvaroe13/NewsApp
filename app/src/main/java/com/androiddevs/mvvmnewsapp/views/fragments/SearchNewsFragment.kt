@@ -78,13 +78,21 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
 
         println("SearchNewsFragment: successfully called")
         apiResponse.data?.let {finalResponse ->
-            btnRetrySearchNews.visibility = View.INVISIBLE
-            rvSearchNews.visibility = View.VISIBLE
-            recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
-            val totalPages = finalResponse.totalResults / Constants.QUERY_PAGE_SIZE + 2
-            isLastPage = viewModel.searchNewsPage == totalPages
-            if(isLastPage){
-                rvSearchNews.setPadding(0, 0, 0, 0)
+            viewModel.searchNewsResponse = null
+            println("SearchNewsFragment: final response = ${finalResponse.articles.size}")
+            if (finalResponse.articles.size == 0){
+                ivSearchNotFound.visibility = View.VISIBLE
+                recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
+            }else{
+                ivSearchNotFound.visibility = View.INVISIBLE
+                btnRetrySearchNews.visibility = View.INVISIBLE
+                rvSearchNews.visibility = View.VISIBLE
+                recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
+                val totalPages = finalResponse.totalResults / Constants.QUERY_PAGE_SIZE + 2
+                isLastPage = viewModel.searchNewsPage == totalPages
+                if(isLastPage){
+                    rvSearchNews.setPadding(0, 0, 0, 0)
+                }
             }
         }
 
