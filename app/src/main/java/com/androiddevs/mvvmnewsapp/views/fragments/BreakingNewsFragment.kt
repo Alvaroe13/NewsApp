@@ -3,6 +3,8 @@ package com.androiddevs.mvvmnewsapp.views.fragments
 import android.os.Bundle
 import android.view.View
 import android.widget.AbsListView
+import android.widget.AdapterView
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -11,17 +13,20 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.androiddevs.mvvmnewsapp.R
 import com.androiddevs.mvvmnewsapp.adapters.NewsFeedAdapter
+import com.androiddevs.mvvmnewsapp.models.ResponseApi
 import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.COUNTRY_CODE
 import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.QUERY_PAGE_SIZE
 import com.androiddevs.mvvmnewsapp.utils.Resource
 import com.androiddevs.mvvmnewsapp.viewModels.NewsFeedViewModel
 import com.androiddevs.mvvmnewsapp.views.MainActivity
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_breaking_news.*
 
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
     lateinit var viewModel : NewsFeedViewModel
     lateinit var recyclerAdapter : NewsFeedAdapter
+    lateinit var spinner : Spinner
     var loadingState = false
     var isLastPage = false
     var scrollingState = false
@@ -30,10 +35,38 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = (activity as MainActivity).viewModel
+        spinner = (activity as MainActivity).spinnerCountries
         initRecycler()
         subscribeViewModel()
         openArticle()
         btnRetry()
+        handlingSpinnerOptions()
+    }
+
+    private fun handlingSpinnerOptions() {
+
+         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+             override fun onNothingSelected(parent: AdapterView<*>?) {
+             }
+
+             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int,id: Long) {
+                 val country = parent?.getItemAtPosition(position).toString()
+                 println("DEBUG, country = $country ")
+                 viewModel.breakingNewsResponse = null
+                 viewModel.getBreakingNews(country)
+             }
+
+         }
+    }
+
+    private fun showSpinner() {
+        println("DEBUG, showSpinner called!")
+        spinner.visibility = View.VISIBLE
+    }
+
+    private fun hideSpinner() {
+        println("DEBUG, hideSpinner called!")
+        spinner.visibility = View.INVISIBLE
     }
 
     private fun initRecycler() {
@@ -50,26 +83,13 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         viewModel.breakingNews.observe(viewLifecycleOwner, Observer { apiResponse ->
             when(apiResponse){
                 is Resource.Success ->{
-                    println("BreakingNewsFragment: call successfully")
-                    btnRetryBreakingNews.visibility = View.INVISIBLE
-                    rvBreakingNews.visibility = View.VISIBLE
-                    hideProgressBar()
-                    apiResponse.data?.let {finalResponse ->
-                        recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
-                        val totalPages = finalResponse.totalResults / QUERY_PAGE_SIZE + 2
-                        isLastPage = viewModel.breakingNewsPage == totalPages
-                        if (isLastPage){
-                            rvBreakingNews.setPadding(0, 0, 0, 0)
-                        }
-                    }
+                    successfulResponse(apiResponse)
                 }
                 is Resource.Error ->{
                     println("BreakingNewsFragment: call error: ${apiResponse.message}")
                     hideProgressBar()
                     apiResponse.message?.let { errorMessage ->
-                        Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
-                        btnRetryBreakingNews.visibility = View.VISIBLE
-                        rvBreakingNews.visibility = View.INVISIBLE
+                        errorResponse(errorMessage)
                     }
                 }
                 is Resource.Loading ->{
@@ -77,6 +97,37 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 }
             }
         })
+    }
+
+    private fun successfulResponse(apiResponse : Resource<ResponseApi>) {
+        println("BreakingNewsFragment: call successfully")
+        btnRetryBreakingNews.visibility = View.INVISIBLE
+        rvBreakingNews.visibility = View.VISIBLE
+        hideProgressBar()
+
+        apiResponse.data?.let {finalResponse ->
+            if (apiResponse.data.articles.size == 0){
+                showNotFoundImage()
+
+                recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
+            }else{
+                hideNotFoundImage()
+                recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
+                val totalPages = finalResponse.totalResults / QUERY_PAGE_SIZE + 2
+                isLastPage = viewModel.breakingNewsPage == totalPages
+                if (isLastPage){
+                    rvBreakingNews.setPadding(0, 0, 0, 0)
+                }
+            }
+
+        }
+    }
+
+    private fun errorResponse( errorMessage : String) {
+        println("DEBUG, errorResponse called, error message = $errorMessage")
+        Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
+        btnRetryBreakingNews.visibility = View.VISIBLE
+        rvBreakingNews.visibility = View.INVISIBLE
     }
 
     private fun openArticle() {
@@ -102,6 +153,14 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 viewModel.getBreakingNews(COUNTRY_CODE)
             }
         }
+    }
+
+    private fun showNotFoundImage(){
+        ivResultNotFound.visibility = View.VISIBLE
+    }
+
+    private fun hideNotFoundImage(){
+        ivResultNotFound.visibility = View.GONE
     }
 
     private fun hideProgressBar() {
@@ -143,6 +202,17 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 scrollingState = true
             }
         }
+    }
+
+
+    override fun onStart() {
+        super.onStart()
+        showSpinner()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        hideSpinner()
     }
 
 

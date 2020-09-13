@@ -12,15 +12,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.androiddevs.mvvmnewsapp.R
 import com.androiddevs.mvvmnewsapp.adapters.NewsFeedAdapter
+import com.androiddevs.mvvmnewsapp.models.ResponseApi
 import com.androiddevs.mvvmnewsapp.utils.Constants
 import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.SEARCH_TIME_DELAY
 import com.androiddevs.mvvmnewsapp.utils.Resource
 import com.androiddevs.mvvmnewsapp.viewModels.NewsFeedViewModel
 import com.androiddevs.mvvmnewsapp.views.MainActivity
-import kotlinx.android.synthetic.main.fragment_breaking_news.*
 import kotlinx.android.synthetic.main.fragment_search_news.*
-import kotlinx.android.synthetic.main.fragment_search_news.paginationProgressBar
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
 
@@ -57,32 +59,45 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
         viewModel.searchNews.observe(viewLifecycleOwner, Observer { apiResponse ->
             when(apiResponse){
                 is Resource.Success ->{
-                    println("SearchNewsFragment: successfully called")
                     hideProgressBar()
-                    apiResponse.data?.let {finalResponse ->
-                        btnRetrySearchNews.visibility = View.INVISIBLE
-                        rvSearchNews.visibility = View.VISIBLE
-                        recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
-                        val totalPages = finalResponse.totalResults / Constants.QUERY_PAGE_SIZE + 2
-                        isLastPage = viewModel.searchNewsPage == totalPages
-                        if(isLastPage){
-                            rvBreakingNews.setPadding(0, 0, 0, 0)
-                        }
-                    }
+                    successfulResponse(apiResponse)
                 }
                 is Resource.Error ->{
                     hideProgressBar()
-                    apiResponse.message?.let { errorMessage ->
-                        Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
-                        btnRetrySearchNews.visibility = View.VISIBLE
-                        rvSearchNews.visibility = View.INVISIBLE
-                    }
+                    errorResponse(apiResponse)
                 }
                 is Resource.Loading ->{
                     showProgressBar()
                 }
             }
         })
+    }
+
+
+    private fun successfulResponse(apiResponse: Resource.Success<ResponseApi>) {
+
+        println("SearchNewsFragment: successfully called")
+        apiResponse.data?.let {finalResponse ->
+            btnRetrySearchNews.visibility = View.INVISIBLE
+            rvSearchNews.visibility = View.VISIBLE
+            recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
+            val totalPages = finalResponse.totalResults / Constants.QUERY_PAGE_SIZE + 2
+            isLastPage = viewModel.searchNewsPage == totalPages
+            if(isLastPage){
+                rvSearchNews.setPadding(0, 0, 0, 0)
+            }
+        }
+
+    }
+
+    private fun errorResponse(apiResponse: Resource.Error<ResponseApi>) {
+        println("SearchNewsFragment: errorResponse called")
+        apiResponse.message?.let { errorMessage ->
+            println("SearchNewsFragment, errorResponse, error message = $errorMessage")
+            Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
+            btnRetrySearchNews.visibility = View.VISIBLE
+            rvSearchNews.visibility = View.INVISIBLE
+        }
     }
 
     private fun openArticle() {
@@ -113,7 +128,8 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news) {
                 delay(SEARCH_TIME_DELAY)
                 textInserted?.let {
                     if (textInserted.toString().isNotEmpty()){
-                        println("SearchNewsFragment text: ${textInserted.toString()}")
+                        println("SearchNewsFragment text: $textInserted")
+                        viewModel.searchNewsResponse = null
                         viewModel.searchNews(textInserted.toString())
                     }else{
                         println("SearchNewsFragment, text null")

@@ -13,8 +13,6 @@ import com.androiddevs.mvvmnewsapp.models.Article
 import com.androiddevs.mvvmnewsapp.models.ResponseApi
 import com.androiddevs.mvvmnewsapp.repositories.NewsRepo
 import com.androiddevs.mvvmnewsapp.utils.AppsContext
-import com.androiddevs.mvvmnewsapp.utils.Constants
-import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.COUNTRY_CODE
 import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.SEARCH_TIME_DELAY
 import com.androiddevs.mvvmnewsapp.utils.Resource
 import kotlinx.coroutines.delay
@@ -37,16 +35,13 @@ class NewsFeedViewModel(
     var searchNewsPage = 1
     var searchNewsResponse : ResponseApi? = null
 
-    init {
-        getBreakingNews(COUNTRY_CODE)
-    }
 
     //---------------------coroutines launch section ---------------------------------//
 
     //lets launch the coroutines here with the viewModelScope
     //(as long as the vm is alive so is the coroutine)
     fun getBreakingNews(countryCode: String ) = viewModelScope.launch {
-        println("NewsFeedViewModel: getBreakingNews called")
+        println("NewsFeedViewModel: getBreakingNews called with country = $countryCode")
         delay(SEARCH_TIME_DELAY)
         safeBreakingNewsCall(countryCode)
     }
@@ -111,6 +106,8 @@ class NewsFeedViewModel(
     private fun processBreakingNewsResponse(response : Response<ResponseApi>) : Resource<ResponseApi>{
         if (response.isSuccessful){
             response.body()?.let { responseResult ->
+                println("BreakingNewsFragment, response code = ${response.code()}")
+                println("BreakingNewsFragment, response articles = ${response.body()?.articles?.size}")
                 //responseResult is the response coming from the server
                 breakingNewsPage++
                 if(breakingNewsResponse == null){

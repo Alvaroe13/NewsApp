@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Tidning</string>
+    <string-array name="countries">
+        <item>us</item>
+        <item>se</item>
+        <item>ve</item>
+    </string-array>
 </resources>
