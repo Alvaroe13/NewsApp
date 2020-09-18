@@ -52,10 +52,10 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
              }
 
              override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int,id: Long) {
-                 val positon = parent?.getItemAtPosition(position).toString()
+                 val imagePosition = parent?.getItemAtPosition(position).toString()
                  lateinit var  country : String
-                 println("DEBUG, country = ${positon} ")
-                 when(positon){
+                 println("DEBUG, country = $imagePosition ")
+                 when(imagePosition){
                      2131230839.toString() -> country = "us"
                      2131230837.toString() -> country = "se"
                      2131230841.toString() -> country = "ve"
