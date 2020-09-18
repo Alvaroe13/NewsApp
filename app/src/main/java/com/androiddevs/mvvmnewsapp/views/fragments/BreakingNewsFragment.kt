@@ -52,19 +52,27 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
              }
 
              override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int,id: Long) {
+
                  val imagePosition = parent?.getItemAtPosition(position).toString()
-                 lateinit var  country : String
-                 println("DEBUG, country = $imagePosition ")
-                 when(imagePosition){
-                     2131230839.toString() -> country = "us"
-                     2131230837.toString() -> country = "se"
-                     2131230841.toString() -> country = "ve"
-                 }
-                 viewModel.breakingNewsResponse = null
-                 viewModel.getBreakingNews(country)
+                 chooseCountry(imagePosition)
+
              }
 
          }
+    }
+
+    private fun chooseCountry(imagePosition: String){
+
+        println("DEBUG, country = $imagePosition ")
+        val country : String = when(imagePosition){
+            2131230838.toString() -> "us"
+            2131230837.toString() -> "se"
+            2131230839.toString() -> "ve"
+            else -> "us"//default option
+        }
+        println("DEBUG, country = $country ")
+        viewModel.breakingNewsResponse = null
+        viewModel.getBreakingNews(country)
     }
 
     private fun showSpinner() {
@@ -182,7 +190,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
     }
 
     /** scroll handling section */
-    val scrollListenerCustom = object : RecyclerView.OnScrollListener() {
+    private val scrollListenerCustom = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
 
