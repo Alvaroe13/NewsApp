@@ -53,25 +53,23 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
              override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int,id: Long) {
 
-                 val imagePosition = parent?.getItemAtPosition(position).toString()
-                 chooseCountry(imagePosition)
-
+                 println("DEBUG, image list position = $position")
+                 chooseCountry(position)
              }
 
          }
     }
 
-    private fun chooseCountry(imagePosition: String){
+    private fun chooseCountry(imagePosition: Int){
 
-        println("DEBUG, country = $imagePosition ")
         val country : String = when(imagePosition){
-            2131230838.toString() -> "us"
-            2131230837.toString() -> "se"
-            2131230839.toString() -> "ve"
-            else -> "us"//default option
+            0 -> "us"
+            1 -> "se"
+            2 -> "ve"
+            else -> "us" //default option
         }
-        println("DEBUG, country = $country ")
-        viewModel.breakingNewsResponse = null
+        println("DEBUG, country selected = $country ")
+        viewModel.breakingNewsResponse = null //for recyclerView not to add previous search in the list
         viewModel.getBreakingNews(country)
     }
 
