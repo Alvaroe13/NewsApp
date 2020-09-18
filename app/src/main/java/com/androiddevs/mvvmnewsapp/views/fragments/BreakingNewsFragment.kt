@@ -1,11 +1,10 @@
 package com.androiddevs.mvvmnewsapp.views.fragments
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.AbsListView
-import android.widget.AdapterView
-import android.widget.Spinner
-import android.widget.Toast
+import android.view.ViewGroup
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -13,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.androiddevs.mvvmnewsapp.R
 import com.androiddevs.mvvmnewsapp.adapters.NewsFeedAdapter
+import com.androiddevs.mvvmnewsapp.adapters.SpinnerAdapter
 import com.androiddevs.mvvmnewsapp.models.ResponseApi
 import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.COUNTRY_CODE
 import com.androiddevs.mvvmnewsapp.utils.Constants.Companion.QUERY_PAGE_SIZE
@@ -20,6 +20,7 @@ import com.androiddevs.mvvmnewsapp.utils.Resource
 import com.androiddevs.mvvmnewsapp.viewModels.NewsFeedViewModel
 import com.androiddevs.mvvmnewsapp.views.MainActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.flags_layout.*
 import kotlinx.android.synthetic.main.fragment_breaking_news.*
 
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
@@ -38,6 +39,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         spinner = (activity as MainActivity).spinnerCountries
         initRecycler()
         subscribeViewModel()
+        addingFlags()
         openArticle()
         btnRetry()
         handlingSpinnerOptions()
@@ -50,8 +52,14 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
              }
 
              override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int,id: Long) {
-                 val country = parent?.getItemAtPosition(position).toString()
-                 println("DEBUG, country = $country ")
+                 val positon = parent?.getItemAtPosition(position).toString()
+                 lateinit var  country : String
+                 println("DEBUG, country = ${positon} ")
+                 when(positon){
+                     2131230839.toString() -> country = "us"
+                     2131230837.toString() -> country = "se"
+                     2131230841.toString() -> country = "ve"
+                 }
                  viewModel.breakingNewsResponse = null
                  viewModel.getBreakingNews(country)
              }
@@ -213,6 +221,13 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
     override fun onPause() {
         super.onPause()
         hideSpinner()
+    }
+
+    private fun addingFlags(){
+
+        val imageList = intArrayOf (R.drawable.ic_united_states, R.drawable.ic_sweden_flag, R.drawable.ic_venezuela )
+        val customerAdapter = SpinnerAdapter(imageList)
+        spinner.adapter =  customerAdapter
     }
 
 
