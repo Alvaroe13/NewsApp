@@ -1,10 +1,11 @@
 package com.androiddevs.mvvmnewsapp.views.fragments
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.*
+import android.widget.AbsListView
+import android.widget.AdapterView
+import android.widget.Spinner
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -20,17 +21,20 @@ import com.androiddevs.mvvmnewsapp.utils.Resource
 import com.androiddevs.mvvmnewsapp.viewModels.NewsFeedViewModel
 import com.androiddevs.mvvmnewsapp.views.MainActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.flags_layout.*
 import kotlinx.android.synthetic.main.fragment_breaking_news.*
+
+var countrySelected: String? = null // here it's not readable automatically by the system
 
 class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
-    lateinit var viewModel : NewsFeedViewModel
-    lateinit var recyclerAdapter : NewsFeedAdapter
-    lateinit var spinner : Spinner
+    lateinit var viewModel: NewsFeedViewModel
+    lateinit var recyclerAdapter: NewsFeedAdapter
+    lateinit var spinner: Spinner
     var loadingState = false
     var isLastPage = false
     var scrollingState = false
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,30 +51,44 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
     private fun handlingSpinnerOptions() {
 
-         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-             override fun onNothingSelected(parent: AdapterView<*>?) {
-             }
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
 
-             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int,id: Long) {
+            override fun onItemSelected(parent: AdapterView<*>?,view: View?,position: Int,id: Long){
+                println("DEBUG, image list position = $position")
+                chooseCountry(position)
+            }
 
-                 println("DEBUG, image list position = $position")
-                 chooseCountry(position)
-             }
-
-         }
+        }
     }
 
-    private fun chooseCountry(imagePosition: Int){
+    private fun chooseCountry(imagePosition: Int) {
 
-        val country : String = when(imagePosition){
-            0 -> "us"
-            1 -> "se"
-            2 -> "ve"
-            else -> "us" //default option
+        val country: String = when (imagePosition) {
+            1-> "us"
+            2 -> "se"
+            3 -> "ve"
+            else -> "us"
         }
-        println("DEBUG, country selected = $country ")
-        viewModel.breakingNewsResponse = null //for recyclerView not to add previous search in the list
-        viewModel.getBreakingNews(country)
+
+        when {
+            countrySelected.equals(country) -> {
+                println("DEBUG, countries are the same so we dont call to the server")
+                return
+            }
+            countrySelected == null -> {
+                println("DEBUG, country selected is empty so we call for the first time")
+                countrySelected = country
+                viewModel.breakingNewsResponse = null //for recyclerView not to add previous search in the list
+                viewModel.getBreakingNews(country)
+            }
+            else -> {
+                println("DEBUG, country selected is different than country")
+                viewModel.breakingNewsResponse = null //for recyclerView not to add previous search in the list
+                viewModel.getBreakingNews(country)
+            }
+        }
+
     }
 
     private fun showSpinner() {
@@ -92,44 +110,44 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         }
     }
 
-    private fun subscribeViewModel(){
+    private fun subscribeViewModel() {
         println("BreakingNewsFragment: initViewModel Breaking news called!")
         viewModel.breakingNews.observe(viewLifecycleOwner, Observer { apiResponse ->
-            when(apiResponse){
-                is Resource.Success ->{
+            when (apiResponse) {
+                is Resource.Success -> {
                     successfulResponse(apiResponse)
                 }
-                is Resource.Error ->{
+                is Resource.Error -> {
                     println("BreakingNewsFragment: call error: ${apiResponse.message}")
                     hideProgressBar()
                     apiResponse.message?.let { errorMessage ->
                         errorResponse(errorMessage)
                     }
                 }
-                is Resource.Loading ->{
+                is Resource.Loading -> {
                     showProgressBar()
                 }
             }
         })
     }
 
-    private fun successfulResponse(apiResponse : Resource<ResponseApi>) {
+    private fun successfulResponse(apiResponse: Resource<ResponseApi>) {
         println("BreakingNewsFragment: call successfully")
         btnRetryBreakingNews.visibility = View.INVISIBLE
         rvBreakingNews.visibility = View.VISIBLE
         hideProgressBar()
 
-        apiResponse.data?.let {finalResponse ->
-            if (apiResponse.data.articles.size == 0){
+        apiResponse.data?.let { finalResponse ->
+            if (apiResponse.data.articles.size == 0) {
                 showNotFoundImage()
 
                 recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
-            }else{
+            } else {
                 hideNotFoundImage()
                 recyclerAdapter.differAsync.submitList(finalResponse.articles.toList())
                 val totalPages = finalResponse.totalResults / QUERY_PAGE_SIZE + 2
                 isLastPage = viewModel.breakingNewsPage == totalPages
-                if (isLastPage){
+                if (isLastPage) {
                     rvBreakingNews.setPadding(0, 0, 0, 0)
                 }
             }
@@ -137,11 +155,12 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         }
     }
 
-    private fun errorResponse( errorMessage : String) {
+    private fun errorResponse(errorMessage: String) {
         println("DEBUG, errorResponse called, error message = $errorMessage")
-        Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
+        //Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
         btnRetryBreakingNews.visibility = View.VISIBLE
         rvBreakingNews.visibility = View.INVISIBLE
+        ivBreakingNotFound.visibility = View.INVISIBLE
     }
 
     private fun openArticle() {
@@ -152,7 +171,10 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 println("SearchNewsFragment, article title: ${it.title}")
             }
 
-            findNavController().navigate(R.id.action_breakingNewsFragment2_to_articleFragment2, bundle)
+            findNavController().navigate(
+                R.id.action_breakingNewsFragment2_to_articleFragment2,
+                bundle
+            )
         }
     }
 
@@ -160,20 +182,24 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
         btnRetryBreakingNews.setOnClickListener {
             val connection = viewModel.checkInternetConnection()
-            if (!connection){
-                Toast.makeText(context, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
-            }else{
+            if (!connection) {
+                Toast.makeText(
+                    context,
+                    "Something went wrong, check your internet connection",
+                    Toast.LENGTH_LONG
+                ).show()
+            } else {
                 println("BreakingNewsFragment, onViewCreated : there is internet and it's called!")
                 viewModel.getBreakingNews(COUNTRY_CODE)
             }
         }
     }
 
-    private fun showNotFoundImage(){
+    private fun showNotFoundImage() {
         ivBreakingNotFound.visibility = View.VISIBLE
     }
 
-    private fun hideNotFoundImage(){
+    private fun hideNotFoundImage() {
         ivBreakingNotFound.visibility = View.GONE
     }
 
@@ -182,7 +208,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         loadingState = false
     }
 
-    private fun showProgressBar(){
+    private fun showProgressBar() {
         paginationProgressBar.visibility = View.VISIBLE
         loadingState = true
     }
@@ -203,7 +229,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
             val isTotalMoreThanVisible = totalItemCount >= QUERY_PAGE_SIZE
             val shouldPaginate = isNotLoadingAndNotLastPage && isAtLastItem && isNotAtBeginning &&
                     isTotalMoreThanVisible && scrollingState
-            if(shouldPaginate) {
+            if (shouldPaginate) {
                 viewModel.getBreakingNews(COUNTRY_CODE)
                 scrollingState = false
             }
@@ -212,7 +238,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
             //this check means if we're scrolling
-            if(newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+            if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
                 scrollingState = true
             }
         }
@@ -229,11 +255,16 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         hideSpinner()
     }
 
-    private fun addingFlags(){
+    private fun addingFlags() {
 
-        val imageList = intArrayOf (R.drawable.ic_united_states, R.drawable.ic_sweden_flag, R.drawable.ic_venezuela )
+        val imageList = intArrayOf(
+            R.drawable.ic_flag,
+            R.drawable.ic_united_states,
+            R.drawable.ic_sweden_flag,
+            R.drawable.ic_venezuela
+        )
         val customerAdapter = SpinnerAdapter(imageList)
-        spinner.adapter =  customerAdapter
+        spinner.adapter = customerAdapter
     }
 
 
