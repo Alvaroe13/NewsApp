@@ -45,7 +45,6 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         subscribeViewModel()
         addingFlags()
         openArticle()
-        btnRetry()
         handlingSpinnerOptions()
     }
 
@@ -157,8 +156,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
 
     private fun errorResponse(errorMessage: String) {
         println("DEBUG, errorResponse called, error message = $errorMessage")
-        //Toast.makeText(activity, "Something went wrong, check your internet connection", Toast.LENGTH_LONG).show()
-        btnRetryBreakingNews.visibility = View.VISIBLE
+        btnRetry()
         rvBreakingNews.visibility = View.INVISIBLE
         ivBreakingNotFound.visibility = View.INVISIBLE
     }
@@ -179,15 +177,12 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
     }
 
     private fun btnRetry() {
+        btnRetryBreakingNews.visibility = View.VISIBLE
 
         btnRetryBreakingNews.setOnClickListener {
             val connection = viewModel.checkInternetConnection()
             if (!connection) {
-                Toast.makeText(
-                    context,
-                    "Something went wrong, check your internet connection",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(context,"Something went wrong, check your internet connection",Toast.LENGTH_LONG).show()
             } else {
                 println("BreakingNewsFragment, onViewCreated : there is internet and it's called!")
                 viewModel.getBreakingNews(COUNTRY_CODE)
